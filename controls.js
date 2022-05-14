@@ -40,6 +40,5 @@ export default class Controls {
           break;
       }
     }
-    console.log(this)
   }
 }
