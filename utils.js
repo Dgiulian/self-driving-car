@@ -6,10 +6,10 @@
  * @returns The value of the variable "value"
  */
 export function clamp(value, min, max) {
-  if(value < min){
+  if (value < min) {
     return min;
   }
-  if(value > max) {
+  if (value > max) {
     return max;
   }
   return value;
@@ -35,22 +35,46 @@ export function lerp(a, b, t) {
 }
 
 
-export function getIntersection(A,B,C,D){ 
-  const tTop=(D.x-C.x)*(A.y-C.y)-(D.y-C.y)*(A.x-C.x);
-  const uTop=(C.y-A.y)*(A.x-B.x)-(C.x-A.x)*(A.y-B.y);
-  const bottom=(D.y-C.y)*(B.x-A.x)-(D.x-C.x)*(B.y-A.y);
-  
-  if(bottom!=0){
-      const t=tTop/bottom;
-      const u=uTop/bottom;
-      if(t>=0 && t<=1 && u>=0 && u<=1){
-          return {
-              x:lerp(A.x,B.x,t),
-              y:lerp(A.y,B.y,t),
-              offset:t
-          }
+/**
+ * If the line segment from A to B intersects the line segment from C to D, return the point of
+ * intersection and the offset along the line segment from A to B, otherwise return null.
+ * @param A - The first point of the first line
+ * @param B - The start point of the line segment
+ * @param C - The start point of the line segment
+ * @param D - The point on the line segment that is closest to the point
+ * @returns The intersection point of two lines.
+ */
+export function getIntersection(A, B, C, D) {
+  const tTop = (D.x - C.x) * (A.y - C.y) - (D.y - C.y) * (A.x - C.x);
+  const uTop = (C.y - A.y) * (A.x - B.x) - (C.x - A.x) * (A.y - B.y);
+  const bottom = (D.y - C.y) * (B.x - A.x) - (D.x - C.x) * (B.y - A.y);
+
+  if (bottom != 0) {
+    const t = tTop / bottom;
+    const u = uTop / bottom;
+    if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+      return {
+        x: lerp(A.x, B.x, t),
+        y: lerp(A.y, B.y, t),
+        offset: t
       }
+    }
   }
 
   return null;
+}
+
+export function polysIntersect(poly1, poly2) {
+  for (let i = 0; i < poly1.length; i++) {
+    for (let j = 0; j < poly2.length; j++) {
+      const touch = getIntersection(
+        poly1[i],
+        poly1[(i + 1) % poly1.length],
+        poly2[j], poly2[(j + 1) % poly2.length]);
+        if(touch) {
+          return true;
+        }
+    }
+  }
+  return false;
 }

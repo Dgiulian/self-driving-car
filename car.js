@@ -1,7 +1,7 @@
 
 import Controls from "./controls";
 import Sensor from "./sensor";
-import { clamp } from "./utils";
+import { clamp, polysIntersect } from "./utils";
 
 const MAX_SPEED = 3;
 
@@ -16,14 +16,50 @@ export default class Car {
     this.acceleration = 0.2;
     this.friction = 0.05;
     this.angle = 0;
-
+    this.polygon = [];
+    this.damaged = false;
     this.controls = new Controls();
     this.sensor = new Sensor(this);
 
   }
   update(roadBorders) {
-    this.#move()
+    if (!this.damaged) {
+      this.#move()
+      this.polygon = this.#createPolygon();
+      this.damaged = this.#assessDamage(roadBorders);
+    }
     this.sensor.update(roadBorders);
+  }
+  #assessDamage(roadBorders) {
+    for (let border of roadBorders) {
+      if (polysIntersect(this.polygon, border)) {
+
+        return true;
+      }
+    }
+    return false;
+  }
+  #createPolygon() {
+    const points = [];
+    const rad = Math.hypot(this.width, this.height) / 2;
+    const alpha = Math.atan2(this.width, this.height);
+    points.push({
+      x: this.x - Math.sin(this.angle - alpha) * rad,
+      y: this.y - Math.cos(this.angle - alpha) * rad
+    });
+    points.push({
+      x: this.x - Math.sin(this.angle + alpha) * rad,
+      y: this.y - Math.cos(this.angle + alpha) * rad
+    });
+    points.push({
+      x: this.x - Math.sin(Math.PI + this.angle - alpha) * rad,
+      y: this.y - Math.cos(Math.PI + this.angle - alpha) * rad
+    });
+    points.push({
+      x: this.x - Math.sin(Math.PI + this.angle + alpha) * rad,
+      y: this.y - Math.cos(Math.PI + this.angle + alpha) * rad
+    });
+    return points;
   }
   #move() {
     if (this.controls.forward) {
@@ -33,21 +69,21 @@ export default class Car {
       this.speed -= this.acceleration;
     }
 
-
-    this.speed = clamp(this.speed, -MAX_SPEED / 2, MAX_SPEED);
     if (this.speed > 0) {
       this.speed -= this.friction;
     }
     if (this.speed < 0) {
       this.speed += this.friction;
     }
+    this.speed = clamp(this.speed, -MAX_SPEED / 2, MAX_SPEED);
+
 
     if (this.controls.left) {
-      const flip = this.speed > 0 ? 1 : -1;
+      const flip = this.speed >= 0 ? 1 : -1;
       this.angle += flip * 0.03;
     }
     if (this.controls.right) {
-      const flip = this.speed > 0 ? 1 : -1;
+      const flip = this.speed >= 0 ? 1 : -1;
       this.angle -= flip * 0.03;
     }
 
@@ -61,13 +97,17 @@ export default class Car {
   }
   draw(/** @type {CanvasRenderingContext2D} */ ctx) {
     ctx.beginPath();
-    ctx.fillStyle = this.color;
-    ctx.save()
-    ctx.translate(this.x, this.y)
-    ctx.rotate(-this.angle)
-    ctx.rect(-this.width / 2, -this.height / 2, this.width, this.height);
+    if (!this.polygon.length) return;
+    if (this.damaged) {
+      ctx.fillStyle = 'gray';
+    } else {
+      ctx.fillStyle = this.color;
+    }
+    ctx.moveTo(this.polygon[0].x, this.polygon[0].y);
+    for (let i = 1; i < this.polygon.length; i++) {
+      ctx.lineTo(this.polygon[i].x, this.polygon[i].y);
+    }
     ctx.fill()
-    ctx.restore()
     this.sensor.draw(ctx);
   }
 }
