@@ -1,5 +1,6 @@
 
 import Controls from "./controls";
+import Sensor from "./sensor";
 import { clamp } from "./utils";
 
 const MAX_SPEED = 3;
@@ -17,10 +18,12 @@ export default class Car {
     this.angle = 0;
 
     this.controls = new Controls();
+    this.sensor = new Sensor(this);
 
   }
-  update(){
+  update(roadBorders) {
     this.#move()
+    this.sensor.update(roadBorders);
   }
   #move() {
     if (this.controls.forward) {
@@ -38,7 +41,7 @@ export default class Car {
     if (this.speed < 0) {
       this.speed += this.friction;
     }
-    
+
     if (this.controls.left) {
       const flip = this.speed > 0 ? 1 : -1;
       this.angle += flip * 0.03;
@@ -65,6 +68,7 @@ export default class Car {
     ctx.rect(-this.width / 2, -this.height / 2, this.width, this.height);
     ctx.fill()
     ctx.restore()
+    this.sensor.draw(ctx);
   }
 }
 
