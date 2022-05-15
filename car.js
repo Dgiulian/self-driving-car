@@ -118,7 +118,7 @@ export default class Car {
 
 
   }
-  draw(/** @type {CanvasRenderingContext2D} */ ctx) {
+  draw(/** @type {CanvasRenderingContext2D} */ ctx, /** @type {boolean} */ drawSensor) {
     ctx.beginPath();
     if (!this.polygon.length) return;
     if (this.damaged) {
@@ -131,7 +131,9 @@ export default class Car {
       ctx.lineTo(this.polygon[i].x, this.polygon[i].y);
     }
     ctx.fill()
-    this.sensor?.draw(ctx);
+    if (drawSensor) {
+      this.sensor?.draw(ctx);
+    }
   }
 }
 
