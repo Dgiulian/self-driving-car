@@ -1,5 +1,6 @@
 
 import Controls from "./controls";
+import NeuralNetwork from "./network";
 import Sensor from "./sensor";
 import { clamp, polysIntersect } from "./utils";
 
@@ -18,9 +19,12 @@ export default class Car {
     this.polygon = [];
     this.damaged = false;
     this.controls = new Controls(type);
+    this.useBrain = type === 'ai';
 
-    if (type === 'manual') {
+    if (type !== 'auto') {
       this.sensor = new Sensor(this);
+      this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 4
+      ])
     }
     this.maxSpeed = maxSpeed
 
@@ -31,7 +35,17 @@ export default class Car {
       this.polygon = this.#createPolygon();
       this.damaged = this.#assessDamage(roadBorders, traffic);
     }
-    this.sensor?.update(roadBorders, traffic);
+    if (this.sensor) {
+      this.sensor?.update(roadBorders, traffic);
+      const offsets = this.sensor.readings.map(s => s === null ? 0 : 1 - s.offset)
+      const outputs = NeuralNetwork.feedForward(offsets, this.brain);
+      if (this.useBrain) {
+        this.controls.forward = outputs[0];
+        this.controls.left = outputs[1];
+        this.controls.right = outputs[2];
+        this.controls.reverse = outputs[3];
+      }
+    }
   }
   #assessDamage(roadBorders, traffic) {
     for (let border of roadBorders) {

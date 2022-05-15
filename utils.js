@@ -64,6 +64,13 @@ export function getIntersection(A, B, C, D) {
   return null;
 }
 
+/**
+ * For each line segment in poly1, check if it intersects with any line segment in poly2. If it does,
+ * return true. If it doesn't, return false.
+ * @param poly1 - The first polygon
+ * @param poly2 - [{x: 0, y: 0}, {x: 0, y: 100}, {x: 100, y: 100}, {x: 100, y: 0}]
+ * @returns A boolean value.
+ */
 export function polysIntersect(poly1, poly2) {
   for (let i = 0; i < poly1.length; i++) {
     for (let j = 0; j < poly2.length; j++) {
@@ -77,4 +84,20 @@ export function polysIntersect(poly1, poly2) {
     }
   }
   return false;
+}
+
+
+/**
+ * If the value is positive, the color is red, if the value is negative, the color is blue, and the
+ * alpha channel is the absolute value of the value.
+ * @param value - The value to be converted to a color.
+ * @returns A string of the form "rgba(R,G,B,alpha)" where R,G,B are the red, green, and blue
+ * components of the color and alpha is the opacity.
+ */
+export function getRGBA(value){
+  const alpha=Math.abs(value);
+  const R=value<0?0:255;
+  const G=R;
+  const B=value>0?0:255;
+  return "rgba("+R+","+G+","+B+","+alpha+")";
 }
