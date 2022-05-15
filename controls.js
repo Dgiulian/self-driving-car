@@ -1,11 +1,18 @@
 export default class Controls {
 
-  constructor() {
+  constructor(type) {
     this.forward = false;
     this.left = false;
     this.right = false;
     this.reverse = false;
-    this.#addKeyboardListeners();
+    switch (type) {
+      case 'manual':
+        this.#addKeyboardListeners();
+        break;
+      case 'auto':
+        this.forward = true;
+        break
+    }
   }
   #addKeyboardListeners() {
     document.onkeydown = (e) => {

@@ -3,10 +3,9 @@ import Controls from "./controls";
 import Sensor from "./sensor";
 import { clamp, polysIntersect } from "./utils";
 
-const MAX_SPEED = 3;
 
 export default class Car {
-  constructor(x, y, width, height, color) {
+  constructor(x, y, width, height, color, type, maxSpeed = 3) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -18,21 +17,31 @@ export default class Car {
     this.angle = 0;
     this.polygon = [];
     this.damaged = false;
-    this.controls = new Controls();
-    this.sensor = new Sensor(this);
+    this.controls = new Controls(type);
+
+    if (type === 'manual') {
+      this.sensor = new Sensor(this);
+    }
+    this.maxSpeed = maxSpeed
 
   }
-  update(roadBorders) {
+  update(roadBorders, traffic) {
     if (!this.damaged) {
       this.#move()
       this.polygon = this.#createPolygon();
-      this.damaged = this.#assessDamage(roadBorders);
+      this.damaged = this.#assessDamage(roadBorders, traffic);
     }
-    this.sensor.update(roadBorders);
+    this.sensor?.update(roadBorders, traffic);
   }
-  #assessDamage(roadBorders) {
+  #assessDamage(roadBorders, traffic) {
     for (let border of roadBorders) {
       if (polysIntersect(this.polygon, border)) {
+
+        return true;
+      }
+    }
+    for (let t of traffic) {
+      if (polysIntersect(this.polygon, t.polygon)) {
 
         return true;
       }
@@ -75,7 +84,7 @@ export default class Car {
     if (this.speed < 0) {
       this.speed += this.friction;
     }
-    this.speed = clamp(this.speed, -MAX_SPEED / 2, MAX_SPEED);
+    this.speed = clamp(this.speed, -this.maxSpeed / 2, this.maxSpeed);
 
 
     if (this.controls.left) {
@@ -108,7 +117,7 @@ export default class Car {
       ctx.lineTo(this.polygon[i].x, this.polygon[i].y);
     }
     ctx.fill()
-    this.sensor.draw(ctx);
+    this.sensor?.draw(ctx);
   }
 }
 
