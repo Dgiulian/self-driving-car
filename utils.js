@@ -107,3 +107,7 @@ export function getRGBA(value) {
 export function getRandomCarImage() {
   return CAR_IMAGES[Math.floor(Math.random() * CAR_IMAGES.length)];
 }
+
+export function getRandomNumber(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}

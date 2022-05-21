@@ -21,6 +21,7 @@ export default class Car {
     this.useBrain = type === "ai";
     this.image = new Image();
     this.image.src = getRandomCarImage();
+
     if (type !== "auto") {
       this.sensor = new Sensor(this);
       this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 4]);
