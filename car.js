@@ -1,9 +1,8 @@
-
+import { CAR_IMAGES } from "./config/constants";
 import Controls from "./controls";
 import NeuralNetwork from "./network";
 import Sensor from "./sensor";
-import { clamp, polysIntersect } from "./utils";
-
+import { clamp, getRandomCarImage, polysIntersect } from "./utils";
 
 export default class Car {
   constructor(x, y, width, height, color, type, maxSpeed = 3) {
@@ -19,25 +18,26 @@ export default class Car {
     this.polygon = [];
     this.damaged = false;
     this.controls = new Controls(type);
-    this.useBrain = type === 'ai';
-
-    if (type !== 'auto') {
+    this.useBrain = type === "ai";
+    this.image = new Image();
+    this.image.src = getRandomCarImage();
+    if (type !== "auto") {
       this.sensor = new Sensor(this);
-      this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 4
-      ])
+      this.brain = new NeuralNetwork([this.sensor.rayCount, 6, 4]);
     }
-    this.maxSpeed = maxSpeed
-
+    this.maxSpeed = maxSpeed;
   }
   update(roadBorders, traffic) {
     if (!this.damaged) {
-      this.#move()
+      this.#move();
       this.polygon = this.#createPolygon();
       this.damaged = this.#assessDamage(roadBorders, traffic);
     }
     if (this.sensor) {
       this.sensor?.update(roadBorders, traffic);
-      const offsets = this.sensor.readings.map(s => s === null ? 0 : 1 - s.offset)
+      const offsets = this.sensor.readings.map((s) =>
+        s === null ? 0 : 1 - s.offset
+      );
       const outputs = NeuralNetwork.feedForward(offsets, this.brain);
       if (this.useBrain) {
         this.controls.forward = outputs[0];
@@ -50,13 +50,11 @@ export default class Car {
   #assessDamage(roadBorders, traffic) {
     for (let border of roadBorders) {
       if (polysIntersect(this.polygon, border)) {
-
         return true;
       }
     }
     for (let t of traffic) {
       if (polysIntersect(this.polygon, t.polygon)) {
-
         return true;
       }
     }
@@ -68,19 +66,19 @@ export default class Car {
     const alpha = Math.atan2(this.width, this.height);
     points.push({
       x: this.x - Math.sin(this.angle - alpha) * rad,
-      y: this.y - Math.cos(this.angle - alpha) * rad
+      y: this.y - Math.cos(this.angle - alpha) * rad,
     });
     points.push({
       x: this.x - Math.sin(this.angle + alpha) * rad,
-      y: this.y - Math.cos(this.angle + alpha) * rad
+      y: this.y - Math.cos(this.angle + alpha) * rad,
     });
     points.push({
       x: this.x - Math.sin(Math.PI + this.angle - alpha) * rad,
-      y: this.y - Math.cos(Math.PI + this.angle - alpha) * rad
+      y: this.y - Math.cos(Math.PI + this.angle - alpha) * rad,
     });
     points.push({
       x: this.x - Math.sin(Math.PI + this.angle + alpha) * rad,
-      y: this.y - Math.cos(Math.PI + this.angle + alpha) * rad
+      y: this.y - Math.cos(Math.PI + this.angle + alpha) * rad,
     });
     return points;
   }
@@ -100,7 +98,6 @@ export default class Car {
     }
     this.speed = clamp(this.speed, -this.maxSpeed / 2, this.maxSpeed);
 
-
     if (this.controls.left) {
       const flip = this.speed >= 0 ? 1 : -1;
       this.angle += flip * 0.03;
@@ -115,14 +112,25 @@ export default class Car {
     }
     this.x -= Math.sin(this.angle) * this.speed;
     this.y -= Math.cos(this.angle) * this.speed;
-
-
   }
-  draw(/** @type {CanvasRenderingContext2D} */ ctx, /** @type {boolean} */ drawSensor) {
-    ctx.beginPath();
+  draw(
+    /** @type {CanvasRenderingContext2D} */ ctx,
+    /** @type {boolean} */ drawSensor
+  ) {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.drawImage(
+      this.image,
+      -this.width / 2,
+      -this.height / 2,
+      this.width,
+      this.height
+    );
+    ctx.restore();
+    /* ctx.beginPath();
     if (!this.polygon.length) return;
     if (this.damaged) {
-      ctx.fillStyle = 'gray';
+      ctx.fillStyle = "gray";
     } else {
       ctx.fillStyle = this.color;
     }
@@ -130,10 +138,10 @@ export default class Car {
     for (let i = 1; i < this.polygon.length; i++) {
       ctx.lineTo(this.polygon[i].x, this.polygon[i].y);
     }
-    ctx.fill()
+    ctx.fill();
     if (drawSensor) {
       this.sensor?.draw(ctx);
     }
+    */
   }
 }
-

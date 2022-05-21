@@ -1,3 +1,5 @@
+import { CAR_IMAGES } from "./config/constants";
+
 /**
  * It returns the value if it's between the min and max, otherwise it returns the min or max
  * @param value - The value to clamp.
@@ -17,9 +19,9 @@ export function clamp(value, min, max) {
 
 /**
  * "It returns a value that is a percentage of the way between two other values."
- * 
+ *
  * The function takes three arguments:
- * 
+ *
  * a: The first value.
  * b: The second value.
  * t: The percentage of the way between the two values.
@@ -33,7 +35,6 @@ export function clamp(value, min, max) {
 export function lerp(a, b, t) {
   return a + (b - a) * t;
 }
-
 
 /**
  * If the line segment from A to B intersects the line segment from C to D, return the point of
@@ -56,8 +57,8 @@ export function getIntersection(A, B, C, D) {
       return {
         x: lerp(A.x, B.x, t),
         y: lerp(A.y, B.y, t),
-        offset: t
-      }
+        offset: t,
+      };
     }
   }
 
@@ -77,15 +78,16 @@ export function polysIntersect(poly1, poly2) {
       const touch = getIntersection(
         poly1[i],
         poly1[(i + 1) % poly1.length],
-        poly2[j], poly2[(j + 1) % poly2.length]);
-        if(touch) {
-          return true;
-        }
+        poly2[j],
+        poly2[(j + 1) % poly2.length]
+      );
+      if (touch) {
+        return true;
+      }
     }
   }
   return false;
 }
-
 
 /**
  * If the value is positive, the color is red, if the value is negative, the color is blue, and the
@@ -94,10 +96,14 @@ export function polysIntersect(poly1, poly2) {
  * @returns A string of the form "rgba(R,G,B,alpha)" where R,G,B are the red, green, and blue
  * components of the color and alpha is the opacity.
  */
-export function getRGBA(value){
-  const alpha=Math.abs(value);
-  const R=value<0?0:255;
-  const G=R;
-  const B=value>0?0:255;
-  return "rgba("+R+","+G+","+B+","+alpha+")";
+export function getRGBA(value) {
+  const alpha = Math.abs(value);
+  const R = value < 0 ? 0 : 255;
+  const G = R;
+  const B = value > 0 ? 0 : 255;
+  return "rgba(" + R + "," + G + "," + B + "," + alpha + ")";
+}
+
+export function getRandomCarImage() {
+  return CAR_IMAGES[Math.floor(Math.random() * CAR_IMAGES.length)];
 }
